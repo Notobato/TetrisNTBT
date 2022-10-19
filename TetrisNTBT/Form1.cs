@@ -62,7 +62,7 @@ namespace TetrisNTBT
         };
 
         private void Tpaint() {
-            Console.WriteLine("PPAP");
+            Console.WriteLine("Debug: Drawing");
             Bitmap canvas = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             Graphics graphics = Graphics.FromImage(canvas);
             SolidBrush brush = new SolidBrush(Color.Gray);
@@ -72,13 +72,13 @@ namespace TetrisNTBT
             {
                 for (int j = 0; j < Twidth; j++)
                 {
-                    if (Tfield[i, j] != 0)
+                    if (Tfield[i, j] != 0) /// field側の描画
                     {
                         Color c = getColorById(Tfield[i, j]);
                         SolidBrush brush1 = new SolidBrush(c);
-                        graphics.FillRectangle(brush1, 300 / Twidth * j, 600 / Theight * i, 30, 30);
+                        graphics.FillRectangle(brush1, 300 / Twidth * j, 600 / Theight * i, 30, 30); /// 青四角描画
                         Pen pen1 = new Pen(Color.Black);
-                        graphics.DrawRectangle(pen1, 300 / Twidth * j, 600 / Theight * i, 30, 30);
+                        graphics.DrawRectangle(pen1, 300 / Twidth * j, 600 / Theight * i, 30, 30); /// 枠線描画
                         brush1.Dispose();
                         pen1.Dispose();
                     }
@@ -125,7 +125,7 @@ namespace TetrisNTBT
         private void Tinit()
         {
             System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 1000 / 144;
+            timer.Interval = 1000 / 60;
             timer.Enabled = true;
             timer.Elapsed += new ElapsedEventHandler(Function);
         }
