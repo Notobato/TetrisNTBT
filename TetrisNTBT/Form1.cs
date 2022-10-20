@@ -5,10 +5,12 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using System.Xml.XPath;
 
 namespace TetrisNTBT
 {
@@ -62,7 +64,10 @@ namespace TetrisNTBT
         };
 
         private void Tpaint() { // 描画全般
-            Console.WriteLine("Debug: Drawing");
+            Console.WriteLine("Info: Drawing");
+            Console.WriteLine("Info: TCount -> " + Tcount);
+            Console.WriteLine("Info: X -> " + x);
+            Console.WriteLine("Info: Y -> " + y);
             Bitmap canvas = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             Graphics graphics = Graphics.FromImage(canvas);
             SolidBrush brush = new SolidBrush(Color.Gray);
@@ -147,6 +152,7 @@ namespace TetrisNTBT
                         }
                     }
                 }
+                TRemove();
                 x = 3;
                 y = 0;
                 rotate = 0;
@@ -164,6 +170,8 @@ namespace TetrisNTBT
                         }
                     }
                 }
+
+                TRemove();
                 x = 3;
                 y = 0;
                 rotate = 0;
@@ -207,29 +215,97 @@ namespace TetrisNTBT
             {
                 if (rotate == 0)
                 {
+                    if (CheckSpace(3))
                     rotate = 3;
                 }
                 else
                 {
-                    rotate--;
-                    return;
+                    if (CheckSpace(rotate - 1))
+                        rotate--;
                 }
             }
             if (e.KeyCode == Keys.X)
             {
                 if (rotate == 3)
                 {
-                    rotate = 0;                    
+                    if (CheckSpace(0))
+                        rotate = 0;
                 }
                 else
                 {
+                    if (CheckSpace(rotate + 1))
                     rotate++;
-                    return;
+                }
+            }
+            if(e.KeyCode == Keys.Up)
+            {
+                if (y == GetY(rotate))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (Imino[rotate, i, j] != 0)
+                            {
+                                Tfield[y + i, x + j] = 1;
+                            }
+                        }
+                    }
+
+                    TRemove();
+                    x = 3;
+                    y = 0;
+                    rotate = 0;
+                }
+
+                else if (CanPlace(rotate))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if (Imino[rotate, i, j] != 0)
+                            {
+                                Tfield[y + i, x + j] = 1;
+                            }
+                        }
+                    }
+
+                    TRemove();
+                    x = 3;
+                    y = 0;
+                    rotate = 0;
+                }
+                else
+                {
+                    for(int k = y; k < Theight; k++)
+                    {
+                        if(CanPlace(rotate, k))
+                        {
+                            y = k;
+                            for (int i = 0; i < 4; i++)
+                            {
+                                for (int j = 0; j < 4; j++)
+                                {
+                                    if (Imino[rotate, i, j] != 0)
+                                    {
+                                        Tfield[y + i, x + j] = 1;
+                                    }
+                                }
+                            }
+
+                            TRemove();
+                            x = 3;
+                            y = 0;
+                            rotate = 0;
+                            break;
+                        }
+                    }
                 }
             }
         }
         
-        private int GetMinX(int rotate)
+        private int GetMinX(int rotate) // xの可能最小値
         {
             if (rotate == 1)
             {
@@ -242,7 +318,7 @@ namespace TetrisNTBT
             return 0;
         }
 
-        private int GetMaxX(int rotate)
+        private int GetMaxX(int rotate) // xの可能最大値
         {
             if (rotate == 1)
             {
@@ -271,7 +347,8 @@ namespace TetrisNTBT
             else return 16;
         }
 
-        private bool CanPlace(int rotate)
+
+        private bool CanPlace(int rotate) /// 下面に対する判定
         {
             if(y >= 19)
             {
@@ -283,12 +360,12 @@ namespace TetrisNTBT
                 {
                     if (Imino[rotate, i, j] != 0)
                     {
-                        if (y + i + 1 > 20)
+                        if (y + i + 1 >= 20)
                         {
                             return true;
                         }
 
-                        if (Tfield[i+y+1, x + j] != 0)
+                        if (Tfield[i + y + 1, x + j] != 0)
                         {
                             return true;
                         }
@@ -336,6 +413,114 @@ namespace TetrisNTBT
                 }
             }
             return true;
+        }
+
+        private bool CheckSpace(int rotate)
+        {
+            if(rotate == 0)
+            {
+                for(int i = 0; i < 4; i++)
+                {
+                    if(x+i >= 10)
+                    {
+                        return false;
+                    }
+                    if(x+i <= 0)
+                    {
+                        return false;
+                    }
+                    if (Tfield[y, x + i] != 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if(rotate == 1 && rotate == 3)
+            {
+                for(int j = 0; j < 4; j++)
+                {
+                    if (y + j >= 20)
+                    {
+                        return false;
+                    }
+                    if (Tfield[y + j, x] != 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if(rotate == 2)
+            {
+                for(int i=0; i<4; i++)
+                {
+                    if (x + i < 0)
+                    {
+                        return false;
+                    }
+                    if (x + i >= 10)
+                    {
+                        return false;
+                    }
+                    if (Tfield[y, x + i] != 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        
+        private void TRemove()
+        {
+            for(int i = 0; i < Theight; i++)
+            {
+                int c = 0;
+                for(int j = 0; j < Twidth; j++)
+                {
+                    if(Tfield[i, j] == 0)
+                    {
+                        break;
+                    }
+                    c++;
+
+                    if (c == 10)
+                    {
+                        Tfield[i, j] = 0;
+                        for (int k = i - 1; 0 <= k; k--)
+                        {
+                            for(int l = 0; l < Twidth; l++)
+                            {
+                                Tfield[k + 1, l] = Tfield[k, l];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool CanPlace(int rotate, int y)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (Imino[rotate, i, j] != 0)
+                    {
+                        if(y+i+1 >= Theight)
+                        {
+                            return true;
+                        }
+                        if (Tfield[y + i + 1, x + j] != 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }
