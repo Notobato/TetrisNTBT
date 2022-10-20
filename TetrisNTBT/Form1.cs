@@ -61,7 +61,7 @@ namespace TetrisNTBT
             }
         };
 
-        private void Tpaint() {
+        private void Tpaint() { // 描画全般
             Console.WriteLine("Debug: Drawing");
             Bitmap canvas = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             Graphics graphics = Graphics.FromImage(canvas);
@@ -122,7 +122,7 @@ namespace TetrisNTBT
             return Color.Brown;
         }
 
-        private void Tinit()
+        private void Tinit() // メインループ
         {
             System.Timers.Timer timer = new System.Timers.Timer();
             timer.Interval = 1000 / 60;
@@ -300,7 +300,7 @@ namespace TetrisNTBT
             return false;
         }
 
-        private bool CanMove(int rotate, int direction)
+        private bool CanMove(int rotate, int direction) /// ブロックに対する回転の判定
         {
             for (int i = 0; i < 4; i++)
             {
